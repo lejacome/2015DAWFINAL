@@ -14,7 +14,7 @@
     "bootstrap",
     "bootstrap3"
   ],
-  "author": "Luis Eduardo Jacome",
+  "author": "Luis Eduardo Jacome Manuel Suarez Israel Fernandez ",
   "license": "MIT",
   "dependencies": {
     "express": "~3.3.4",
