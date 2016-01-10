@@ -10,6 +10,10 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var config = require('./oauth.js');
 var FacebookStrategy = require('passport-facebook').Strategy;
+var TwitterStrategy = require('passport-twitter').Strategy;
+var GithubStrategy = require('passport-github2').Strategy;
+var GoogleStrategy = require('passport-google-oauth2').Strategy;
+
 
 
 // serialize and deserialize
@@ -27,6 +31,42 @@ passport.use(new FacebookStrategy({
   callbackURL: config.facebook.callbackURL
   },
   function(accessToken, refreshToken, profile, done) {
+    process.nextTick(function () {
+      return done(null, profile);
+    });
+  }
+));
+
+passport.use(new TwitterStrategy({
+  consumerKey: config.twitter.consumerKey,
+  consumerSecret: config.twitter.consumerSecret,
+  callbackURL: config.twitter.callbackURL
+},
+function(accessToken, refreshToken, profile, done) {
+  process.nextTick(function () {
+    return done(null, profile);
+  });
+}
+));
+passport.use(new GithubStrategy({
+  clientID: config.github.clientID,
+  clientSecret: config.github.clientSecret,
+  callbackURL: config.github.callbackURL
+},
+function(accessToken, refreshToken, profile, done) {
+  process.nextTick(function () {
+    return done(null, profile);
+  });
+}
+));
+
+passport.use(new GoogleStrategy({
+  clientID: config.google.clientID,
+  clientSecret: config.google.clientSecret,
+  callbackURL: config.google.callbackURL,
+  passReqToCallback: true
+  },
+  function(request, accessToken, refreshToken, profile, done) {
     process.nextTick(function () {
       return done(null, profile);
     });
@@ -72,6 +112,37 @@ app.get('/auth/facebook/callback',
   function(req, res) {
     res.redirect('/account');
   });
+  
+  app.get('/auth/twitter',
+  passport.authenticate('twitter'),
+  function(req, res){});
+app.get('/auth/twitter/callback',
+  passport.authenticate('twitter', { failureRedirect: '/' }),
+  function(req, res) {
+    res.redirect('/account');
+  });
+
+app.get('/auth/github',
+  passport.authenticate('github'),
+  function(req, res){});
+app.get('/auth/github/callback',
+  passport.authenticate('github', { failureRedirect: '/' }),
+  function(req, res) {
+    res.redirect('/account');
+  });
+  
+app.get('/auth/google',
+  passport.authenticate('google', { scope: [
+    'https://www.googleapis.com/auth/plus.login',
+    'https://www.googleapis.com/auth/plus.profile.emails.read'
+  ] }
+));  
+  
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/' }),
+  function(req, res) {
+    res.redirect('/account');
+  });  
 
 app.get('/logout', function(req, res){
   req.logout();
@@ -86,3 +157,5 @@ function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) { return next(); }
   res.redirect('/');
 }
+
+module.exports = app;
